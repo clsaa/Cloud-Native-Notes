@@ -162,3 +162,134 @@ VM_81_7_centos:172.18.42.1/16
 
 <http://containertutorials.com/network/ovs_docker.html>
 <https://github.com/openvswitch/ovs/blob/master/utilities/ovs-docker>
+
+## 5.5 Linux namespace详解
+
+>namespace起到了隔离的作用,在用户层面用户只能看到自己的namespace下的资源,既每个namespace相当于一个独立的操作系统.容器就是利用了namespace,每个容器使用自己的namespace保持隔离.
+
+* namespace示意图
+
+![image](http://clsaadockerimgbed-10042610.cossh.myqcloud.com/5-5-01.png)
+
+* namespace的层级关系
+
+![image](http://clsaadockerimgbed-10042610.cossh.myqcloud.com/5-5-02.png)
+
+* namespace之间的通信
+  * 点对点型,veth pair是用于不同network namespace间进行通信的方式， veth pair将一个networknamespace数据发往另一个networknamespace的veth。 ![image](http://clsaadockerimgbed-10042610.cossh.myqcloud.com/5-5-03.png)
+  * 交换机型,Linux Bridge可以实现类似交换机的工作模式，将多个不同Namespace上的网卡连通 ![image](http://clsaadockerimgbed-10042610.cossh.myqcloud.com/5-5-04.png)
+
+## 5.6 OVS&Docker实战
+
+### 5.6.1 OVS介绍
+
+>OVS是一个功能强大的软件交换机
+
+* OVS基本示意图
+
+![image](http://clsaadockerimgbed-10042610.cossh.myqcloud.com/5-6-01.png)
+
+* OVS&Docker示意图(同一个子网,也可以不同子网)
+
+![image](http://clsaadockerimgbed-10042610.cossh.myqcloud.com/5-6-02.png)
+
+* OVS&Docker示意图(不同子网,与Kubernetes类似)
+
+>两个不同子网交互必须走路由,相同子网可以走mac
+
+![image](http://clsaadockerimgbed-10042610.cossh.myqcloud.com/5-6-03.png)
+
+### 5.6.2 OVS安装
+
+* 参考<https://www.jianshu.com/p/658332deac99>
+
+* 关闭SELINUX
+
+```shell
+
+#永久关闭SELINUX
+编辑/etc/selinux/config文件，并设置SELINUX=disabled，然后重启生效
+#临时关闭SELINUX
+setenforce 0
+#临时打开SELINUX
+setenforce 1
+#验证SELINUX状态（Permissive-关闭，Enforcing-打开）
+getenforce
+
+```
+
+* 安装依赖包/下载openvswitch/预处理
+
+```shell
+
+#yum -y install make gcc openssl-devel autoconf automake rpm-build redhat-rpm-config
+
+#yum -y install python-devel openssl-devel kernel-devel kernel-debug-devel libtool wget
+
+#wget http://openvswitch.org/releases/openvswitch-2.5.2.tar.gz
+
+#mkdir -p ~/rpmbuild/SOURCES
+#cp openvswitch-2.5.2.tar.gz ~/rpmbuild/SOURCES/ 
+#cd ~/rpmbuild/SOURCES
+#tar xvfz openvswitch-2.5.2.tar.gz
+#sed 's/openvswitch-kmod, //g' openvswitch-2.5.2/rhel/openvswitch.spec > openvswitch-2.5.2/rhel/openvswitch_no_kmod.spec
+```
+
+* 构建RPM包
+
+```shell
+
+#rpmbuild -bb --nocheck openvswitch-2.5.2/rhel/openvswitch_no_kmod.spec
+
+```
+
+* 安装
+
+```shell
+
+#yum localinstall ~/rpmbuild/RPMS/x86_64/openvswitch-2.5.2-1.x86_64.rpm
+
+```
+
+* 启动服务,检查状态,查看日志
+
+```shell
+
+#yum localinstall ~/rpmbuild/RPMS/x86_64/openvswitch-2.5.2-1.x86_64.rpm
+
+#service openvswitch restart
+Restarting openvswitch (via systemctl):                    [  OK  ]
+
+#service openvswitch status
+ovsdb-server is running with pid 4567
+ovs-vswitchd is running with pid 4581
+
+[root@VM_81_7_centos SOURCES]# tail /var/log/messages
+Mar  7 15:01:43 localhost ovs-vsctl: ovs|00001|vsctl|INFO|Called as ovs-vsctl --no-wait -- init -- set Open_vSwitch . db-version=7.12.1
+Mar  7 15:01:43 localhost ovs-vsctl: ovs|00001|vsctl|INFO|Called as ovs-vsctl --no-wait set Open_vSwitch . ovs-version=2.5.2 "external-ids:system-id=\"14486b4e-04a8-42f1-b837-bab05ab2072f\"" "system-type=\"unknown\"" "system-version=\"unknown\""
+Mar  7 15:01:43 localhost openvswitch: Configuring Open vSwitch system IDs [  OK  ]
+Mar  7 15:01:43 localhost kernel: openvswitch: Open vSwitch switching datapath
+Mar  7 15:01:43 localhost openvswitch: Inserting openvswitch module [  OK  ]
+Mar  7 15:01:43 localhost openvswitch: Starting ovs-vswitchd [  OK  ]
+Mar  7 15:01:43 localhost openvswitch: Enabling remote OVSDB managers [  OK  ]
+Mar  7 15:01:43 localhost systemd: Started LSB: Open vSwitch switch.
+Mar  7 15:02:01 localhost systemd: Started Session 36822 of user root.
+Mar  7 15:02:01 localhost systemd: Starting Session 36822 of user root.
+
+```
+
+### 5.6.3 OVS+Docker设置
+
+```shell
+
+ovs-vsctl add-br br0
+ovs-vsctl add-port br0 gre1 -- set interface gre1 type=gre
+option:remote_ip=192.168.18.128
+#添加br0到本地docker0， 使得容器流量通过OVS流经tunnel
+brctl addif docker0 br0
+ip link set dev br0 up
+ip link set dev docker0 up
+iptables -t nat -F;iptables -F
+ip route add 172.17.0.0/16 dev docker0
+
+```
