@@ -1,6 +1,6 @@
 # 1.微服务监控
 
-## 1.1.CAT
+## 1.1.CAT
 
 >CAT（Central Application Tracking）是一个实时和接近全量的监控系统，它侧重于对Java应用的监控，基本接入了美团上海侧所有核心应用。目前在中间件（MVC、RPC、数据库、缓存等）框架中得到广泛应用，为美团各业务线提供系统的性能指标、健康状况、监控告警等。自2014年开源以来，除了美团之外，CAT还在携程、陆金所、猎聘网、找钢网等多家互联网公司生产环境应用
 
@@ -145,7 +145,7 @@ github: <https://github.com/apache/incubator-skywalking>
 
 * 拓扑图
 * 调用链监控, 支持服务内本地方法监控
-* 支持多维度的调用链分析/慢请求监控
+* 支持多维度的调用链分析/慢请求监控
 * HOST/JVM监控
 * 服务监控(吞吐量/响应时间/SLA)
 
@@ -171,7 +171,7 @@ github: <https://github.com/apache/incubator-skywalking>
 ### 1.5.1.相关链接
 
 * 官网: <https://prometheus.io/>
-* IBM Prometheus 入门与实践: <https://www.ibm.com/developerworks/cn/cloud/library/cl-lo-prometheus-getting-started-and-practice/index.html>
+* IBM Prometheus 入门与实践: <https://www.ibm.com/developerworks/cn/cloud/library/cl-lo-prometheus-getting-started-and-practice/index.html>
 * 知乎专栏: <https://zhuanlan.zhihu.com/p/24811652>
 
 ### 1.5.2.主要优势与特点
@@ -217,7 +217,7 @@ github: <https://github.com/apache/incubator-skywalking>
 
 * 探针的性能消耗: Pinpoint>ZipKin>Skywalking 参考<https://juejin.im/post/5a7a9e0af265da4e914b46f1>
 * 代码的侵入性: ZipKin≈CAT>>Pinpoint≈Skywalking
-* 水平扩展能力: ZipKin(http通信会对正常的访问造成影响，所以还是推荐基于mq异步方式通信)> pinpoint(agent通过thrift通信框架，发送链路信息到collector)   ≈ Skywalking(单机和集群模式,collector与agent之间的通信使用了gRPC)> Prometheus
+* 水平扩展能力: ZipKin(http通信会对正常的访问造成影响，所以还是推荐基于mq异步方式通信)> pinpoint(agent通过thrift通信框架，发送链路信息到collector)≈SkyWalking(单机和集群模式,collector与agent之间的通信使用了gRPC)> Prometheus
 * 平台支持:ZipKin≈CAT≈Skywalking>>Pinpoint?Prometheus
 * 调用链精度:Pinpoint≈Skywalking>>ZipKin>>Prometheus=0
 
