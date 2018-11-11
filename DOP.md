@@ -115,6 +115,8 @@ DOP细节
 
 ![image](http://cloud-computing-notes-img-bed-1252032169.cossh.myqcloud.com/2018-11-04-DOP%E7%BB%86%E8%8A%82.png)
 
+![image](http://cloud-computing-notes-img-bed-1252032169.cossh.myqcloud.com/2018-11-11-DOP-1.png)
+
 ### 1.2.2.代码管理模块
 
 此模块用于管理、存储源代码
