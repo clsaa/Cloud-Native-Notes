@@ -119,6 +119,8 @@ DOP细节
 
 ![image](http://cloud-computing-notes-img-bed-1252032169.cossh.myqcloud.com/2018-11-04-DOP%E7%BB%86%E8%8A%82.png)
 
+![image](http://clsaa-big-data-notes-1252032169.cossh.myqcloud.com/2018-12-02-DOP-%E6%B5%81%E7%A8%8B.png)
+
 ![image](http://cloud-computing-notes-img-bed-1252032169.cossh.myqcloud.com/2018-11-11-DOP-2.png)
 
 
