@@ -2,7 +2,7 @@
 
 ## 20.1.JenkinsX
 
-### 20.1.1.相关资料
+### 20.1.1.相关pipline资料
 
 <http://dockone.io/article/5109>
 <https://www.oschina.net/p/jenkins-x>
